@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 import uuid
 from datetime import datetime
 
@@ -7,10 +7,16 @@ from services.email_service import send_confirmation_email, send_patient_form_em
 
 appointment_bp = Blueprint("appointment_bp", __name__)
 
+# Minimal frontend route
+@appointment_bp.route("/book", methods=["GET"])
+def book_page():
+    return render_template("booking.html")
+
 @appointment_bp.route("/api/appointments", methods=["POST"])
 def create_appointment():
     """Create appointment and send confirmation email."""
-    data = request.get_json()
+    # Accept JSON or form-encoded body
+    data = request.get_json(silent=True) or request.form
 
     full_name = data.get("full_name")
     email = data.get("email")
@@ -18,11 +24,13 @@ def create_appointment():
     time = data.get("time")
     concern = data.get("concern")
 
+    if not all([full_name, email, date, time, concern]):
+        return jsonify({"error": "full_name, email, date, time, concern are required"}), 400
+
     appointment_id = "AID" + uuid.uuid4().hex[:10]
     token = uuid.uuid4().hex
 
-    col = appointments_collection()
-    col.insert_one({
+    doc = {
         "appointment_id": appointment_id,
         "patient": {
             "full_name": full_name,
@@ -36,8 +44,12 @@ def create_appointment():
             "confirmation_token": token,
             "confirmation_sent_at": datetime.utcnow()
         }
-    })
+    }
 
+    col = appointments_collection()
+    col.insert_one(doc)
+
+    # email confirmation link
     send_confirmation_email(email, token)
 
     return jsonify({
@@ -45,21 +57,17 @@ def create_appointment():
         "appointment_id": appointment_id
     }), 201
 
-
 @appointment_bp.route("/confirm/<token>", methods=["GET"])
 def confirm_appointment(token):
     """Confirm appointment from email link."""
     col = appointments_collection()
-
-    appt = col.find_one({
-        "appointment_details.confirmation_token": token
-    })
+    appt = col.find_one({"appointment_details.confirmation_token": token})
 
     if not appt:
         return jsonify({"error": "Invalid or expired confirmation token."}), 400
 
     col.update_one(
-        {"_id": appt["_id"]},
+        {"appointment_id": appt["appointment_id"]},
         {"$set": {
             "appointment_details.status": "Confirmed",
             "appointment_details.confirmed_at": datetime.utcnow()
@@ -72,7 +80,5 @@ def confirm_appointment(token):
         appt["appointment_id"]
     )
 
-    return jsonify({
-        "message": "Appointment confirmed.",
-        "appointment_id": appt["appointment_id"]
-    })
+    # Minimal confirmation page
+    return render_template("confirmation.html")

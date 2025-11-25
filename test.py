@@ -1,7 +1,8 @@
+import os
 import requests
-import json
 
 BASE_URL = "http://127.0.0.1:5000"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "12345")
 
 def print_response(resp):
     print("STATUS:", resp.status_code)
@@ -46,6 +47,26 @@ def test_get_appointments():
     print_response(resp)
 
 
+
+def admin_session_login():
+    print("- Testing POST /admin/login (session)")
+    s = requests.Session()
+    resp = s.post(f"{BASE_URL}/admin/login", data={"password": ADMIN_PASSWORD})
+    print_response(resp)
+    return s
+
+
+def test_admin_endpoints():
+    s = admin_session_login()
+    print("- Testing GET /api/admin/appointments")
+    resp = s.get(f"{BASE_URL}/api/admin/appointments")
+    print_response(resp)
+
+    print("- Testing GET /api/admin/patients")
+    resp = s.get(f"{BASE_URL}/api/admin/patients")
+    print_response(resp)
+
+
 def test_patient_record():
     print("- Testing POST /api/patient")
     data = {
@@ -72,5 +93,7 @@ if __name__ == "__main__":
     print("Created Appointment ID:", appt_id)
 
     test_patient_record()
+
+    test_admin_endpoints()
 
     print("=== Tests Complete ===")
