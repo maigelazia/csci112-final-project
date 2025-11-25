@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_mail import Mail
 import config
 
@@ -9,6 +9,10 @@ def create_app():
     app.config.from_object(config)
     mail.init_app(app)
 
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+    
     @app.route("/test")
     def test_route():
         return "API OK"
