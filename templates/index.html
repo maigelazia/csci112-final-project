@@ -1,4 +1,40 @@
-<h2>Welcome to the Clinic System</h2>
-<p>Frontend coming soon.</p>
-<p><a href="/book">Book an appointment</a></p>
-<p><a href="/admin/login">Admin login</a></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+<body>
+    <nav class = "navbar">
+        <h1>DentalX</h1>
+
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">About Us</a>
+            <a href="#">Contact Us</a>
+            <a href="#">Log In</a>
+            <button>Book Now</button>
+            <!-- <a href="#">Book Now</a> -->
+        </div>
+    </nav>
+
+    <div class="overlay">
+    </div>
+    
+    <img src="{{ url_for('static', filename='images/dentist-bg.JPG') }}" class="bg">
+    
+    {% block content %}
+        <div class="welcome-div">
+            <h1 class="welcome-text">Your Smile,<br>Our Priority</h1>
+            <p class="welcome-text-">Lorem Ipsum Dolor Whatever Yada Yada Yes</p>
+            <button class="book-btn">Book an Appointment</button>
+
+        </div>
+    {% endblock %}
+
+</body>
+
+</html>

@@ -9,6 +9,14 @@ def create_app():
     app.config.from_object(config)
     mail.init_app(app)
 
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+    
+    @app.route("/test")
+    def test_route():
+        return "API OK"
+
     # register blueprints
     from routes.appointment_routes import appointment_bp
     from routes.patient_routes import patient_bp
