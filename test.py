@@ -1,99 +1,62 @@
-import os
-import requests
+import requests, json
 
 BASE_URL = "http://127.0.0.1:5000"
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "12345")
 
-def print_response(resp):
+def show(resp):
     print("STATUS:", resp.status_code)
     try:
-        print("JSON:", resp.json())
-    except Exception:
+        print("JSON:", json.dumps(resp.json(), indent=2))
+    except:
         print("TEXT:", resp.text)
-    print("-" * 40)
-
+    print("-"*50)
 
 def test_connection():
-    print("- Testing /test route")
-    resp = requests.get(f"{BASE_URL}/test")
-    print_response(resp)
+    print("GET /test")
+    show(requests.get(f"{BASE_URL}/test"))
 
-
-def test_create_appointment():
-    print("- Testing POST /api/appointments")
-    data = {
-        "full_name": "John Tester",
-        "email": "john@test.com",
-        "date": "2025-01-20",
-        "time": "14:00",
-        "concern": "Testing API"
+def create_appointment():
+    payload = {
+        "full_name": "Shoto Todoroki",
+        "email": "shoto@example.com",
+        "contact_number": "+639123456789",
+        "date": "2025-08-01",
+        "time": "14:30",
+        "concern": "Tooth Extraction",
+        "clinic_branch": "Makati Main"
     }
-    resp = requests.post(
-        f"{BASE_URL}/api/appointments",
-        json=data
-    )
-    print_response(resp)
-
-    # Return appointment_id if created
+    print("POST /api/appointments")
+    resp = requests.post(f"{BASE_URL}/api/appointments", json=payload)
+    show(resp)
     try:
         return resp.json().get("appointment_id")
     except:
         return None
 
+def admin_get_appointments():
+    print("GET /api/admin/appointments (may need admin session in real app)")
+    show(requests.get(f"{BASE_URL}/api/admin/appointments"))
 
-def test_get_appointments():
-    print("- Testing GET /api/admin/appointments")
-    resp = requests.get(f"{BASE_URL}/api/admin/appointments")
-    print_response(resp)
+def admin_arrive(appt_id):
+    print("POST /api/admin/appointments/{}/arrive".format(appt_id))
+    show(requests.post(f"{BASE_URL}/api/admin/appointments/{appt_id}/arrive"))
 
+def admin_complete(appt_id):
+    print("POST /api/admin/appointments/{}/complete".format(appt_id))
+    show(requests.post(f"{BASE_URL}/api/admin/appointments/{appt_id}/complete"))
 
+def admin_cancel(appt_id):
+    print("POST /api/admin/appointments/{}/cancel".format(appt_id))
+    show(requests.post(f"{BASE_URL}/api/admin/appointments/{appt_id}/cancel"))
 
-def admin_session_login():
-    print("- Testing POST /admin/login (session)")
-    s = requests.Session()
-    resp = s.post(f"{BASE_URL}/admin/login", data={"password": ADMIN_PASSWORD})
-    print_response(resp)
-    return s
-
-
-def test_admin_endpoints():
-    s = admin_session_login()
-    print("- Testing GET /api/admin/appointments")
-    resp = s.get(f"{BASE_URL}/api/admin/appointments")
-    print_response(resp)
-
-    print("- Testing GET /api/admin/patients")
-    resp = s.get(f"{BASE_URL}/api/admin/patients")
-    print_response(resp)
-
-
-def test_patient_record():
-    print("- Testing POST /api/patient")
-    data = {
-        "patient_id": "PID001",
-        "first_name": "Test",
-        "last_name": "User",
-        "medical_history": "None"
-    }
-
-    resp = requests.post(
-        f"{BASE_URL}/api/patient",
-        json=data
-    )
-    print_response(resp)
-
+def cancel_link(appt_id):
+    print("GET /cancel/{}".format(appt_id))
+    show(requests.get(f"{BASE_URL}/cancel/{appt_id}"))
 
 if __name__ == "__main__":
-    print("=== Running API Tests ===")
-
     test_connection()
-    test_get_appointments()
-
-    appt_id = test_create_appointment()
-    print("Created Appointment ID:", appt_id)
-
-    test_patient_record()
-
-    test_admin_endpoints()
-
-    print("=== Tests Complete ===")
+    appt_id = create_appointment()
+    print("APPOINTMENT_ID:", appt_id)
+    if appt_id:
+        admin_arrive(appt_id)
+        admin_complete(appt_id)
+        admin_cancel(appt_id)  # or try cancel_link(appt_id)

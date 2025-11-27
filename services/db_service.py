@@ -1,11 +1,11 @@
 from pymongo import MongoClient
 import config
 
-client = MongoClient(config.MONGO_URI)
-db = client[config.DB_NAME]
+_client = MongoClient(config.MONGO_URI)
+_db = _client[config.DB_NAME]
 
 def appointments_collection():
-    return db.appointments
+    return _db.appointments
 
 def patients_collection():
-    return db.patients
+    return _db.patients

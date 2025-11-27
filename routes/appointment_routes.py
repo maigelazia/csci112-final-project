@@ -1,75 +1,89 @@
 from flask import Blueprint, request, jsonify, render_template
-import uuid
 from datetime import datetime
-from services.db_service import appointments_collection
-from services.email_service import send_confirmation_email, send_patient_form_email
+import uuid
+
+from services.db_service import appointments_collection, patients_collection
+from services.email_service import (
+    send_patient_form_email,
+    send_cancelled_email
+)
 
 appointment_bp = Blueprint("appointment_bp", __name__)
 
-@appointment_bp.route("/book", methods=["GET"])
+
+@appointment_bp.route("/book")
 def book_page():
     return render_template("booking.html")
 
-# create appointment (JSON or form)
+# create appointment
 @appointment_bp.route("/api/appointments", methods=["POST"])
 def create_appointment():
     data = request.get_json(silent=True) or request.form
 
     full_name = data.get("full_name")
     email = data.get("email")
+    contact_number = data.get("contact_number")
     date = data.get("date")
     time = data.get("time")
     concern = data.get("concern")
+    clinic_branch = data.get("clinic_branch", "Main")
 
     if not all([full_name, email, date, time, concern]):
-        return jsonify({"error": "full_name, email, date, time, concern are required"}), 400
+        return jsonify({"error": "Missing required fields: full_name, email, date, time, concern"}), 400
 
-    appointment_id = "AID" + uuid.uuid4().hex[:10]
-    token = uuid.uuid4().hex
+    appointment_id = "AID" + uuid.uuid4().hex[:12].upper()
 
     doc = {
         "appointment_id": appointment_id,
         "patient": {
+            "id": None,  # will be filled when/if patient form is submitted
             "full_name": full_name,
-            "email": email
+            "email": email,
+            "contact_number": contact_number
         },
         "appointment_details": {
             "preferred_date": date,
             "preferred_time": time,
             "concern": concern,
+            "clinic_branch": clinic_branch,
             "status": "Pending",
-            "confirmation_token": token,
-            "confirmation_sent_at": datetime.utcnow()
-        }
+            "check_in": {
+                "arrived": False,
+                "arrival_time": None
+            }
+        },
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
     }
 
-    col = appointments_collection()
-    col.insert_one(doc)
+    appointments_collection().insert_one(doc)
 
-    send_confirmation_email(email, token)
+    # if this is a new email (no patient record yet), send patient form email
+    if not patients_collection().find_one({"email": email}):
+        send_patient_form_email(email, appointment_id)
 
     return jsonify({
-        "message": "Appointment created. Check your email to confirm.",
-        "appointment_id": appointment_id
+        "message": "Appointment created.",
+        "appointment_id": appointment_id,
+        "new_patient": not bool(patients_collection().find_one({"email": email}))
     }), 201
 
-# Email confirmation → show confirmation.html page
-@appointment_bp.route("/confirm/<token>", methods=["GET"])
-def confirm_appointment(token):
+# cancellation link
+@appointment_bp.route("/cancel/<appointment_id>")
+def cancel_appointment(appointment_id):
     col = appointments_collection()
-    appt = col.find_one({"appointment_details.confirmation_token": token})
-
+    appt = col.find_one({"appointment_id": appointment_id})
     if not appt:
-        return jsonify({"error": "Invalid or expired confirmation token."}), 400
+        return render_template("cancelled.html", appointment_id=None, error="Invalid or expired link.")
 
     col.update_one(
-        {"appointment_id": appt["appointment_id"]},
+        {"appointment_id": appointment_id},
         {"$set": {
-            "appointment_details.status": "Confirmed",
-            "appointment_details.confirmed_at": datetime.utcnow()
+            "appointment_details.status": "Cancelled",
+            "appointment_details.cancelled_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
         }}
     )
 
-    send_patient_form_email(appt["patient"]["email"], appt["appointment_id"])
-
-    return render_template("confirmation.html")
+    send_cancelled_email(appt["patient"]["email"], appointment_id)
+    return render_template("cancelled.html", appointment_id=appointment_id, error=None)
