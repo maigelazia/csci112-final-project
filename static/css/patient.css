@@ -1,0 +1,63 @@
+.form-wrapper {
+    max-width: 850px;
+    margin-bottom: 40px;
+    margin: 20px auto;
+    background: white;
+    padding: 60px;
+    border-radius: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-wrap: wrap;       
+    gap: 20px;             
+    align-items: center;
+    margin-bottom: 5px;     
+    gap: 5px;
+}
+
+.form-group label {
+    width: 100%;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    flex: 1;                 
+    min-width: 180px;        
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+h3 {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.submit-btn {
+    display: block;
+    margin: auto;  
+    padding: 10px 20px;
+}
+
+.submit-btn:hover {
+    background-color: #1f6ed1;
+}
+
+.bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.checkbox {
+    font-size: 14px;   
+    font-weight: normal;
+}

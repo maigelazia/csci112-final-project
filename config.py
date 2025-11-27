@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # DATABASE
-MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/test")
 DB_NAME = os.getenv("DB_NAME", "clinic")
 
 # APP

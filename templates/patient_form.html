@@ -1,3 +1,123 @@
-<h2>Patient Information Form</h2>
-<p>Appointment ID: {{ appointment_id }}</p>
-<p>Frontend team will add the real form here that posts to /api/patient.</p>
+<!-- ACCESSIBLE THROUGH: http://127.0.0.1:5000/patientform -->
+
+{%extends "index.html"%}
+
+{% block title %} Patient Form{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/patient.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<div class = 'form-wrapper'>
+    <h1> Patient Information Form</h1>
+    <form method = "POST" action="/submit_patient_form">
+        <h3>Personal Information</h3>
+        <div class = form-group>
+            <label> First Name</label>
+            <input type="text" name = "first_name" required>
+
+            <label> Middle Name</label>
+            <input type="text" name = "middle_name" required>
+
+            <label> Last Name</label>
+            <input type="text" name = "last_name" required>
+
+            <label> Birthdate</label>
+            <input type="date" name = "birthdate" required>
+
+            <label>Sex</label>
+            <select name="sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="Other">Other</option>
+            </select>
+
+        </div>
+        
+        <hr>
+
+        <h3>Contact Details</h3>
+        <div class = form-group>
+            <label> Email</label>
+            <input type="email" name = "email" required>
+
+            <label> Contact Number</label>
+            <input type="text" name = "number" required>
+        </div>
+        
+        <hr>
+
+        <h3>Address</h3>
+        <div class = form-group>
+            <label> State</label>
+            <input type="text" name = "state" required>
+
+            <label> City</label>
+            <input type="text" name = "city" required>
+        </div>
+
+        <hr>
+
+        <h3>Insurance Details </h3>
+
+        <div class="form-group">
+
+            <label>Health Insurance Provider</label>
+            <input type="text" name="provider" placeholder="e.g., Philhealth, Manulife"></textarea>
+            
+            <label>Policy Number</label>
+            <input type="text" name="policy_number" placeholder="e.g., PH1234567890"></textarea>
+
+        </div>
+
+        <hr>
+          
+        
+        <h3>Medical History</h3>
+        
+        <div class="form-group">
+            <label>Existing Medical Conditions (comma-separated)</label>
+            <textarea name="medical_conditions" placeholder="e.g., Asthma, diabetes"></textarea>
+
+            <label>Current Medications (comma-separated)</label>
+            <textarea name="current_medications" placeholder="e.g., Ceelin chewables, Doxycycline"></textarea>
+
+            <label>Allergies(comma-separated)</label>
+            <input type="text" name="allergies" placeholder="e.g.,Allergic rhinits, nuts">
+
+            <label>Family History:</label>
+            <label class="checkbox" for="diabetes"> Diabetes <input type="checkbox" id="diabetes" name="diabetes" value="diabetes"></label>
+            <label class="checkbox" for="cancer">Cancer <input type="checkbox" id="cancer" name="cancer" value="cancer"></label>
+            <label class="checkbox" for="Hypertension">Hypertension <input type="checkbox" id="Hypertension" name="Hypertension" value="Hypertension"></label>
+            <label class="checkbox" for="heart_disease">Heart Disease  <input type="checkbox" id="heart_disease" name="heart_disease" value="heart_disease"></label>
+        </div>
+
+        <hr>
+
+        <h3>Dental History</h3>
+        <div class="form-group">
+            <label>Last Visit Date</label>
+            <input type="date" name="last_visit">
+
+            <label>Reason/s for Visit</label>
+            <input type="text" name="reason_for_visit">
+
+            <label>Previous Dental Work (comma-separated)</label>
+            <textarea name="previous_dental_work" placeholder="e.g., Braces, wisdom tooth removal, filling "></textarea>
+
+            <label>Current Concern/s (comma-separated)</label>
+            <textarea name="current_concerns" placeholder="e.g., Tooth sensitivity, bleeding gums, etc."></textarea>
+        </div>
+
+        <hr>
+
+        <button type="submit" class="submit-btn" >Submit Form</button>
+
+       
+
+    </form>
+</div>
+{% endblock %}
+
