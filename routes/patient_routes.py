@@ -58,24 +58,33 @@ def save_patient():
         "email": email,
         "contact_number": contact_number,
 
-        "address_state": data.get("state"),
-        "address_city": data.get("city"),
-        "insurance_provider": data.get("insurance_provider"),
-        "insurance_policy_number": data.get("insurance_policy_number"),
+        "address": {
+            "state": data.get("address_state"),
+            "city": data.get("address_city")
+        },
 
-        "conditions": data.get("conditions", []),
-        "allergies": data.get("allergies", []),
-        "current_medications": data.get("current_medications", []),
-        "family_history": data.get("family_history", {}),
+        "insurance_details": {
+            "provider": data.get("insurance_provider"),
+            "policy_number": data.get("insurance_policy_number")
+        },
 
-        "dental_last_visit": data.get("dental_last_visit"),
-        "dental_reason": data.get("dental_reason"),
-        "dental_previous_work": data.get("dental_previous_work", []),
-        "dental_current_concerns": data.get("dental_current_concerns", []),
+        "medical_history": {
+            "conditions": data.get("conditions", []),
+            "allergies": data.get("allergies", []),
+            "current_medications": data.get("current_medications", []),
+            "family_history": data.get("family_history", {})
+        },
+
+        "dental_history": {
+            "last_visit": data.get("dental_last_visit"),
+            "reason_for_visit": data.get("dental_reason"),
+            "previous_dental_work": data.get("dental_previous_work", []),
+            "current_concerns": data.get("dental_current_concerns", [])
+        },
 
         "appointment_history": existing.get("appointment_history", []) if existing else [],
 
-        "created_at": existing.get("created_at") if existing else now,
+        "created_at": existing.get("created_at", now) if existing else now,
         "updated_at": now
     }
 
