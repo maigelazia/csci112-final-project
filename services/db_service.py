@@ -9,3 +9,6 @@ def appointments_collection():
 
 def patients_collection():
     return db.patients
+
+def admins_collection():
+    return db.admins

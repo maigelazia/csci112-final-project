@@ -1,0 +1,39 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Appointments{% endblock %}
+
+{% block content %}
+<h2>Appointments</h2>
+<div id="table-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function fetchAndRender(url) {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.length === 0) {
+        document.getElementById('table-container').innerHTML = "<p>No data found</p>";
+        return;
+    }
+
+    const headers = Object.keys(data[0]);
+    let table = "<table class='admin-table'><tr>";
+    headers.forEach(h => table += `<th>${h}</th>`);
+    table += "</tr>";
+
+    data.forEach(row => {
+        table += "<tr>";
+        headers.forEach(h => table += `<td>${row[h]}</td>`);
+        table += "</tr>";
+    });
+
+    table += "</table>";
+    document.getElementById('table-container').innerHTML = table;
+}
+
+// Fetch appointments on page load
+fetchAndRender('/api/admin/appointments');
+</script>
+{% endblock %}

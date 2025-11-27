@@ -21,6 +21,8 @@ def create_app():
     @app.route("/patientform")
     def patient_page():
         return render_template("patient_form.html")
+    
+
 
     # Register blueprints
     from routes.appointment_routes import appointment_bp

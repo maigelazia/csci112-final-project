@@ -9,16 +9,12 @@ admin_bp = Blueprint("admin_bp", __name__)
 def admin_dashboard():
     return render_template("admin_dashboard.html")
 
-@admin_bp.route("/api/admin/appointments", methods=["GET"])
+@admin_bp.route("/admin/appointments")
 @admin_required
-def all_appointments():
-    col = appointments_collection()
-    appts = list(col.find({}, {"_id": 0}))
-    return jsonify(appts)
+def view_appointments():
+    return render_template("admin_appointments.html")
 
-@admin_bp.route("/api/admin/patients", methods=["GET"])
+@admin_bp.route("/admin/patients")
 @admin_required
-def all_patients():
-    col = patients_collection()
-    pts = list(col.find({}, {"_id": 0}))
-    return jsonify(pts)
+def view_patients():
+    return render_template("admin_patients.html")
