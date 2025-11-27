@@ -11,22 +11,36 @@ def _next_patient_id():
 
 @patient_bp.route("/patient/<appointment_id>")
 def patient_form_page(appointment_id):
-    return render_template("patient_form.html", appointment_id=appointment_id)
+    appt = appointments_collection().find_one({"appointment_id": appointment_id})
+    if not appt:
+        return "Invalid appointment", 404
+
+    # pass existing data to frontend so fields can be pre-filled or hidden
+    patient_info = appt["patient"]
+
+    return render_template(
+        "patient_form.html",
+        appointment_id=appointment_id,
+        patient_info=patient_info
+    )
 
 @patient_bp.route("/api/patient", methods=["POST"])
 def save_patient():
     data = request.get_json(silent=True) or request.form
 
-    # required minimal fields
-    email = data.get("email")
-    first_name = data.get("first_name")
-    last_name = data.get("last_name")
-    if not email or not first_name or not last_name:
-        return jsonify({"error": "first_name, last_name, and email are required"}), 400
+    appointment_id = data.get("appointment_id")
+    if not appointment_id:
+        return jsonify({"error": "appointment_id required"}), 400
 
-    middle_name = data.get("middle_name")
-    full_name = data.get("full_name") or " ".join([x for x in [first_name, middle_name, last_name] if x])
-    contact_number = data.get("contact_number")
+    # load appointment so we can pull patient name/email/contact from it
+    acol = appointments_collection()
+    appt = acol.find_one({"appointment_id": appointment_id})
+    if not appt:
+        return jsonify({"error": "Appointment not found"}), 404
+
+    full_name = appt["patient"]["full_name"]
+    email = appt["patient"]["email"]
+    contact_number = appt["patient"].get("contact_number")
 
     pcol = patients_collection()
     existing = pcol.find_one({"email": email})
@@ -37,26 +51,22 @@ def save_patient():
     else:
         patient_id = _next_patient_id()
 
+    # build clean patient record
     record = {
         "patient_id": patient_id,
-        "first_name": first_name,
-        "middle_name": middle_name,
-        "last_name": last_name,
         "full_name": full_name,
         "email": email,
         "contact_number": contact_number,
 
-        # optional simple fields
         "address_state": data.get("state"),
         "address_city": data.get("city"),
         "insurance_provider": data.get("insurance_provider"),
         "insurance_policy_number": data.get("insurance_policy_number"),
 
-        # lists/dicts (send as arrays/objects from the form or keep empty)
-        "conditions": data.get("conditions", []),          # [{condition, medications, controlled}]
-        "allergies": data.get("allergies", []),            # [{substance, reaction}]
+        "conditions": data.get("conditions", []),
+        "allergies": data.get("allergies", []),
         "current_medications": data.get("current_medications", []),
-        "family_history": data.get("family_history", {}),  # {diabetes: bool, ...}
+        "family_history": data.get("family_history", {}),
 
         "dental_last_visit": data.get("dental_last_visit"),
         "dental_reason": data.get("dental_reason"),
@@ -69,37 +79,33 @@ def save_patient():
         "updated_at": now
     }
 
-    # upsert by email
+    # upsert
     pcol.update_one({"email": email}, {"$set": record}, upsert=True)
 
-    # if appointment_id provided, attach to appointment + history
-    appointment_id = data.get("appointment_id")
-    if appointment_id:
-        acol = appointments_collection()
-        appt = acol.find_one({"appointment_id": appointment_id})
-        if appt:
-            # attach patient_id to appointment
-            acol.update_one(
-                {"appointment_id": appointment_id},
-                {"$set": {
-                    "patient.id": patient_id,
-                    "patient.full_name": full_name,
-                    "updated_at": now
-                }}
-            )
-            # push a simple entry into patient appointment_history
-            entry = {
-                "appointment_id": appointment_id,
-                "date": appt["appointment_details"].get("preferred_date"),
-                "time": appt["appointment_details"].get("preferred_time"),
-                "concern": appt["appointment_details"].get("concern"),
-                "branch": appt["appointment_details"].get("clinic_branch"),
-                "status": appt["appointment_details"].get("status")
-            }
-            pcol.update_one(
-                {"email": email},
-                {"$addToSet": {"appointment_history": entry},
-                 "$set": {"updated_at": now}}
-            )
+    # attach patient_id to appointment
+    acol.update_one(
+        {"appointment_id": appointment_id},
+        {"$set": {
+            "patient.id": patient_id,
+            "patient.full_name": full_name,
+            "updated_at": now
+        }}
+    )
 
-    return jsonify({"message": "Patient record saved.", "patient_id": patient_id})
+    # log entry to history
+    entry = {
+        "appointment_id": appointment_id,
+        "date": appt["appointment_details"].get("preferred_date"),
+        "time": appt["appointment_details"].get("preferred_time"),
+        "concern": appt["appointment_details"].get("concern"),
+        "branch": appt["appointment_details"].get("clinic_branch"),
+        "status": appt["appointment_details"].get("status")
+    }
+
+    pcol.update_one(
+        {"email": email},
+        {"$addToSet": {"appointment_history": entry},
+         "$set": {"updated_at": now}}
+    )
+
+    return jsonify({"message": "Patient record saved", "patient_id": patient_id})
