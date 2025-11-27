@@ -1,21 +1,18 @@
 from flask import Blueprint, request, jsonify, render_template
 import uuid
 from datetime import datetime
-
 from services.db_service import appointments_collection
 from services.email_service import send_confirmation_email, send_patient_form_email
 
 appointment_bp = Blueprint("appointment_bp", __name__)
 
-# Minimal frontend route
 @appointment_bp.route("/book", methods=["GET"])
 def book_page():
     return render_template("booking.html")
 
+# create appointment (JSON or form)
 @appointment_bp.route("/api/appointments", methods=["POST"])
 def create_appointment():
-    """Create appointment and send confirmation email."""
-    # Accept JSON or form-encoded body
     data = request.get_json(silent=True) or request.form
 
     full_name = data.get("full_name")
@@ -49,7 +46,6 @@ def create_appointment():
     col = appointments_collection()
     col.insert_one(doc)
 
-    # email confirmation link
     send_confirmation_email(email, token)
 
     return jsonify({
@@ -57,9 +53,9 @@ def create_appointment():
         "appointment_id": appointment_id
     }), 201
 
+# Email confirmation → show confirmation.html page
 @appointment_bp.route("/confirm/<token>", methods=["GET"])
 def confirm_appointment(token):
-    """Confirm appointment from email link."""
     col = appointments_collection()
     appt = col.find_one({"appointment_details.confirmation_token": token})
 
@@ -74,11 +70,6 @@ def confirm_appointment(token):
         }}
     )
 
-    # after confirming, send patient form email
-    send_patient_form_email(
-        appt["patient"]["email"],
-        appt["appointment_id"]
-    )
+    send_patient_form_email(appt["patient"]["email"], appt["appointment_id"])
 
-    # Minimal confirmation page
     return render_template("confirmation.html")

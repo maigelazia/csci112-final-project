@@ -1,16 +1,19 @@
 from flask_mail import Message
-from app import mail
+from flask import current_app
+import config
 
-BASE_URL = "http://localhost:5000"
+def _get_mail():
+    # Flask-Mail registers under app.extensions["mail"]
+    return current_app.extensions["mail"]
 
 def send_confirmation_email(email: str, token: str):
-    link = f"{BASE_URL}/confirm/{token}"
+    link = f"{config.BASE_URL}/confirm/{token}"
     msg = Message("Confirm Your Appointment", recipients=[email])
     msg.body = f"Please confirm your appointment:\n{link}"
-    mail.send(msg)
+    _get_mail().send(msg)
 
 def send_patient_form_email(email: str, appointment_id: str):
-    link = f"{BASE_URL}/patient/{appointment_id}"
+    link = f"{config.BASE_URL}/patient/{appointment_id}"
     msg = Message("Patient Information Form", recipients=[email])
     msg.body = f"Please fill out your patient form:\n{link}"
-    mail.send(msg)
+    _get_mail().send(msg)
