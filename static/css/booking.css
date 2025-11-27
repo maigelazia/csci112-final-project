@@ -82,6 +82,7 @@ textarea:focus {
 
 textarea {
     height: 100px;
+    width: 90%;
     resize: none;
 }
 

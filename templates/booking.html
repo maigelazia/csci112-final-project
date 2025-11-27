@@ -15,7 +15,7 @@
             <h1>Book an Appointment</h1>
             <!-- <p>Please fill out the form below and we’ll confirm your schedule.</p> -->
             
-            <form method="POST" action="/book">
+            <form method="POST" action="/api/appointments">
                 <div class="personal-info">
                     <h3>Personal Information</h3>
                     <div class="form-group">
@@ -34,6 +34,8 @@
                                 <label>First Name</label>
                                 <input type="text" name="first_name" placeholder="Enter first name" required>
                             </div>
+
+                            <input type="hidden" name="full_name" id="full_name_field">
                         </div>
 
                         <div class="input-group">
@@ -62,6 +64,7 @@
                         <label>Preferred Time</label>
                         <input type="time" name="time" required>
                         <br>
+                        <br>
                         <label>Service / Concern</label>
                         <select name="service" required>
                             <option value="" disabled selected>Select a service</option>
@@ -72,7 +75,9 @@
                             <option value="Other">Other</option>
                         </select>
                         <br>
+                        <br>
                         <label>Additional Notes</label>
+                        <br>
                         <textarea name="notes" placeholder="Anything the dentist should know before your visit?"></textarea>
                     </div>
                 </div>
@@ -83,3 +88,16 @@
         </div>
     </div>
     {% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelector("form").addEventListener("submit", function () {
+    const first = document.querySelector("[name='first_name']").value;
+    const middle = document.querySelector("[name='middle_name']").value;
+    const last = document.querySelector("[name='last_name']").value;
+
+    document.getElementById("full_name_field").value =
+        [first, middle, last].filter(Boolean).join(" ");
+});
+</script>
+{% endblock %}
