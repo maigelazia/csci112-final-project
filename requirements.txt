@@ -1,5 +1,5 @@
 Flask
+Flask-Mail
+Flask-APScheduler
 pymongo
 python-dotenv
-Flask-Mail
-schedule

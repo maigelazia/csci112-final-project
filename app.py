@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from flask_apscheduler import APScheduler
 from flask_mail import Mail
 import config
 
@@ -7,7 +8,10 @@ mail = Mail()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config)
+    
     mail.init_app(app)
+    scheduler.init_app(app)
+    scheduler.start()
 
     # Register blueprints
     from routes.appointment_routes import appointment_bp
@@ -29,6 +33,22 @@ def create_app():
         return "API OK"
 
     return app
+
+from jobs.scheduler_jobs import send_daily_reminders, cancel_expired_appointments
+
+scheduler.add_job(
+    id="daily_reminder_job",
+    func=send_daily_reminders,
+    trigger="cron",
+    hour=8, minute=0
+)
+
+scheduler.add_job(
+    id="auto_cancel_expired",
+    func=cancel_expired_appointments,
+    trigger="cron",
+    hour=0, minute=5
+)
 
 if __name__ == "__main__":
     app = create_app()

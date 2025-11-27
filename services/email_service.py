@@ -33,3 +33,10 @@ def send_cancelled_email(email: str, appointment_id: str):
     )
     _mail().send(msg)
 
+def send_no_show_email(email: str, appointment_id: str):
+    msg = Message("We Missed You", recipients=[email])
+    msg.body = (
+        f"It seems yesterday’s appointment (ID {appointment_id}) was missed.\n"
+        f"If you still want to continue care, you may book a new appointment anytime.\n"
+    )
+    _mail().send(msg)

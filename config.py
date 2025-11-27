@@ -22,3 +22,6 @@ MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "no-reply@clinic.com")
 
 # URLs
 BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:5000")
+
+# SCHEDULER
+SCHEDULER_API_ENABLED = True
