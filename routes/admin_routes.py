@@ -7,7 +7,7 @@ admin_bp = Blueprint("admin_bp", __name__)
 @admin_bp.route("/admin/dashboard")
 @admin_required
 def admin_dashboard():
-    return render_template("admin_dashboard.html")
+    return render_template("admin_base.html")
 
 @admin_bp.route("/admin/appointments")
 @admin_required
