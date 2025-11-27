@@ -28,9 +28,22 @@ def create_appointment():
     concern = data.get("concern")
     clinic_branch = data.get("clinic_branch", "Main")
 
-    if not all([full_name, email, date, time, concern]):
-        return jsonify({"error": "Missing required fields: full_name, email, date, time, concern"}), 400
+    col = appointments_collection()
 
+    # double booking check
+    existing = col.find_one({
+        "appointment_details.preferred_date": date,
+        "appointment_details.preferred_time": time,
+        "appointment_details.clinic_branch": clinic_branch,
+        "appointment_details.status": {"$ne": "Cancelled"}  
+    })
+
+    if existing:
+        return jsonify({
+            "error": "This time slot is already booked. Please choose another date or time."
+        }), 409
+
+    # continue booking normally
     appointment_id = "AID" + uuid.uuid4().hex[:12].upper()
 
     doc = {
