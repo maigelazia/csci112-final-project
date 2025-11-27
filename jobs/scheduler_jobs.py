@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from services.db_service import appointments_collection
 from services.email_service import send_reminder_email, send_cancelled_email
-from config import Config
+import config
+# from config import Config
 
 # send reminders every day at 8 AM for appointments happening tomorrow
 def send_daily_reminders():

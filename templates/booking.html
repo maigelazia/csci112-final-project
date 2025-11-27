@@ -1,66 +1,85 @@
-{% extends "index.html" %}
+    {% extends "index.html" %}
 
-{% block title %} Book an Appointment {% endblock %}
+    {% block title %} Book an Appointment {% endblock %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/booking.css') }}">
-{% endblock %}
+    {% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/booking.css') }}">
+    {% endblock %}
 
-{% block content %}
-<div class="form-wrapper">
-    <h1>Book an Appointment</h1>
-    <p>Please fill out the form below and we’ll confirm your schedule.</p>
+    {% block content %}
 
-    <form method="POST" action="/book">
+    <img src="{{ url_for('static', filename='images/book-bg.JPG') }}" class="booking-bg">
 
-        <h3>Personal Information</h3>
-        <div class="form-group">
+    <div class="form-container">
+        <div class="form-proper">
+            <h1>Book an Appointment</h1>
+            <!-- <p>Please fill out the form below and we’ll confirm your schedule.</p> -->
+            
+            <form method="POST" action="/book">
+                <div class="personal-info">
+                    <h3>Personal Information</h3>
+                    <div class="form-group">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" placeholder="Enter last name" required>
+                            </div>
 
-            <label>Last Name</label>
-            <input type="text" name="last_name" required>
+                            <div class="input-group">
+                                <label>Middle Name</label>
+                                <input type="text" name="middle_name" placeholder="Enter middle name">
+                            </div>
 
-            <label>Middle Name</label>
-            <input type="text" name="middle_name">
+                            <div class="input-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" placeholder="Enter first name" required>
+                            </div>
+                        </div>
 
-            <label>First Name</label>
-            <input type="text" name="first_name" required>
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" name="email" placeholder="example@gmail.com" required>
+                        </div>
 
-            <label>Email</label>
-            <input type="email" name="email" required>
+                        <div class="input-group">
+                            <label>Phone Number</label>
+                            <input type="text" name="phone" placeholder="09xxxxxxxxx">
+                        </div>
 
-            <label>Phone Number</label>
-            <input type="text" name="phone">
+                    </div>
+                </div>
+
+                <hr>
+
+                
+                <h3>Appointment Details</h3>
+                <div class="form-group appointment-details">
+                    <div class="form-group">
+
+                        <label>Preferred Date</label>
+                        <input type="date" name="date" required>
+
+                        <label>Preferred Time</label>
+                        <input type="time" name="time" required>
+                        <br>
+                        <label>Service / Concern</label>
+                        <select name="service" required>
+                            <option value="" disabled selected>Select a service</option>
+                            <option value="Teeth Cleaning">Teeth Cleaning</option>
+                            <option value="Dental Check-up">Dental Check-up</option>
+                            <option value="Tooth Extraction">Tooth Extraction</option>
+                            <option value="Braces Consultation">Braces Consultation</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <br>
+                        <label>Additional Notes</label>
+                        <textarea name="notes" placeholder="Anything the dentist should know before your visit?"></textarea>
+                    </div>
+                </div>
+                <hr>
+
+                <button type="submit" class="submit-btn">Submit Booking</button>
+            </form>
         </div>
-
-        <hr>
-
-        <h3>Appointment Details</h3>
-        <div class="form-group">
-
-            <label>Preferred Date</label>
-            <input type="date" name="date" required>
-
-            <label>Preferred Time</label>
-            <input type="time" name="time" required>
-
-            <label>Service / Concern</label>
-            <select name="service" required>
-                <option value="" disabled selected>Select a service</option>
-                <option value="Teeth Cleaning">Teeth Cleaning</option>
-                <option value="Dental Check-up">Dental Check-up</option>
-                <option value="Tooth Extraction">Tooth Extraction</option>
-                <option value="Braces Consultation">Braces Consultation</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <label>Additional Notes</label>
-            <textarea name="notes" placeholder="Anything the dentist should know before your visit?"></textarea>
-        </div>
-
-        <hr>
-
-        <button type="submit" class="submit-btn">Submit Booking</button>
-
-    </form>
-</div>
-{% endblock %}
+    </div>
+    {% endblock %}

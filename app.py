@@ -4,6 +4,7 @@ from flask_mail import Mail
 import config
 
 mail = Mail()
+scheduler = APScheduler()
 
 def create_app():
     app = Flask(__name__)
