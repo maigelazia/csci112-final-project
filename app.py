@@ -29,6 +29,10 @@ def create_app():
     def index():
         return render_template("index.html")
 
+    @app.route("/services")
+    def services():
+        return render_template("services.html")
+    
     @app.route("/test")
     def test_route():
         return "API OK"
