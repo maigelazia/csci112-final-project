@@ -4,37 +4,79 @@
 
 {% block content %}
 <h2>Patients</h2>
-<div id="table-container"></div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Patient ID</th>
+            <th>Name</th>
+            <th>Email & Contact</th>
+            <th>Location</th>
+            <th>Medical</th>
+        </tr>
+    </thead>
+    <tbody id="patients-body"></tbody>
+</table>
+
+<script>
+async function loadPatients() {
+    const resp = await fetch("/api/admin/patients");
+    const data = await resp.json();
+
+    const rows = data.results.map(p => `
+        <tr>
+            <td>${p.patient_id}</td>
+            <td>${p.full_name}</td>
+            <td>
+                ${p.email}<br>
+                <small>${p.contact_number}</small>
+            </td>
+            <td>${p.address_city}, ${p.address_state}</td>
+            <td>
+                Conditions: ${p.conditions?.length || 0}<br>
+                Allergies: ${p.allergies?.length || 0}<br>
+            </td>
+        </tr>
+    `);
+
+    document.getElementById("patients-body").innerHTML = rows.join("");
+}
+
+loadPatients();
+</script>
 {% endblock %}
 
 {% block scripts %}
 <script>
 async function fetchAndRender(url) {
-    const res = await fetch(url);
-    const data = await res.json();
+    const res = await fetch("/api/admin/patients");
+    const json = await res.json();
+    let rows = json.results || json;
 
-    const container = document.getElementById('table-container');
+    const container = document.getElementById("table-container");
+    container.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (!rows || rows.length === 0) {
         container.innerHTML = "<p>No patients found.</p>";
         return;
     }
 
     // Create table headers
-    const headers = Object.keys(data[0]);
-    let table = "<table class='admin-table'><tr>";
-    headers.forEach(h => table += `<th>${h}</th>`);
-    table += "</tr>";
+    const headers = Object.keys(rows[0]);
+    let html = "<table class='admin-table'><thead><tr>";
+
+    headers.forEach(h => html += `<th>${h}</th>`);
+    html += "</tr></thead><tbody>";
 
     // Fill table rows
-    data.forEach(row => {
-        table += "<tr>";
-        headers.forEach(h => table += `<td>${row[h]}</td>`);
-        table += "</tr>";
+    rows.forEach(row => {
+        html += "<tr>";
+        headers.forEach(h => html += `<td>${JSON.stringify(row[h])}</td>`);
+        html += "</tr>";
     });
 
-    table += "</table>";
-    container.innerHTML = table;
+    html += "</tbody></table>";
+    container.innerHTML = html;
 }
 
 // Fetch patients on page load

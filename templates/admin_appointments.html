@@ -4,33 +4,87 @@
 
 {% block content %}
 <h2>Appointments</h2>
-<div id="table-container"></div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Appointment ID</th>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Branch</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="appointments-body"></tbody>
+</table>
+
+<script>
+async function loadAppointments() {
+    const resp = await fetch("/api/admin/appointments");
+    const data = await resp.json();
+
+    const rows = data.results.map(a => `
+        <tr>
+            <td>${a.appointment_id}</td>
+            <td>
+                ${a.patient.full_name}<br>
+                <small>${a.patient.email}</small><br>
+                <small>${a.patient.contact_number}</small>
+            </td>
+            <td>${a.appointment_details.preferred_date}</td>
+            <td>${a.appointment_details.preferred_time}</td>
+            <td>${a.appointment_details.clinic_branch}</td>
+            <td><strong>${a.appointment_details.status}</strong></td>
+        </tr>
+    `);
+
+    document.getElementById("appointments-body").innerHTML = rows.join("");
+}
+
+loadAppointments();
+</script>
 {% endblock %}
 
 {% block scripts %}
 <script>
-async function fetchAndRender(url) {
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.length === 0) {
-        document.getElementById('table-container').innerHTML = "<p>No data found</p>";
+async function fetchAndRender() {
+    const res = await fetch("/api/admin/appointments");
+    if (!res.ok) {
+        console.error("Fetch failed:", res.status);
         return;
     }
 
-    const headers = Object.keys(data[0]);
-    let table = "<table class='admin-table'><tr>";
-    headers.forEach(h => table += `<th>${h}</th>`);
-    table += "</tr>";
+    const json = await res.json();
+    let rows = json.results || json;
 
-    data.forEach(row => {
-        table += "<tr>";
-        headers.forEach(h => table += `<td>${row[h]}</td>`);
-        table += "</tr>";
+    const container = document.getElementById("table-container");
+    container.innerHTML = "";
+
+    if (!rows || rows.length === 0) {
+        container.innerHTML = "<p>No appointments found.</p>";
+        return;
+    }
+
+    const headers = Object.keys(rows[0]);
+    let html = "<table class='admin-table'><thead><tr>";
+
+    headers.forEach(h => {
+        html += `<th>${h}</th>`;
     });
 
-    table += "</table>";
-    document.getElementById('table-container').innerHTML = table;
+    html += "</tr></thead><tbody>";
+
+    rows.forEach(row => {
+        html += "<tr>";
+        headers.forEach(h => {
+            html += `<td>${typeof row[h] === "object" ? JSON.stringify(row[h]) : row[h]}</td>`;
+        });
+        html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    container.innerHTML = html;
 }
 
 // Fetch appointments on page load
