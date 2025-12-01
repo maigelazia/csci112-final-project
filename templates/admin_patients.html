@@ -5,6 +5,27 @@
 {% block content %}
 <h2>Patients</h2>
 
+<div class="filters">
+    <input type="text" id="search" placeholder="Search patient name, email, ID">
+
+    <!-- quite confused where to get medical condition and allergy data for now -->
+    <!-- <input type="text" id="condition" placeholder="Filter by condition">
+    <input type="text" id="allergy" placeholder="Filter by allergy"> -->
+
+    <select id="sort">
+        <option value="full_name">Sort by Name</option>
+        <option value="patient_id">Sort by ID</option>
+    </select>
+
+    <select id="order">
+        <option value="asc">ASC</option>
+        <option value="desc">DESC</option>
+    </select>
+
+    <button onclick="loadPatients()">Apply</button>
+    <button onclick="clearFilters()">Clear</button>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -18,10 +39,26 @@
     <tbody id="patients-body"></tbody>
 </table>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
+
 async function loadPatients() {
-    const resp = await fetch("/api/admin/patients");
+    const params = new URLSearchParams({
+        search: document.getElementById("search").value,
+        // condition: document.getElementById("condition").value,
+        // allergy: document.getElementById("allergy").value,
+        sort: document.getElementById("sort").value,
+        order: document.getElementById("order").value,
+        page: 1,
+        page_size: 50
+    });
+
+    const resp = await fetch(`/api/admin/patients?${params.toString()}`);
     const data = await resp.json();
+
+    console.log("Loaded patients:", data.results); // for debugging
 
     const rows = data.results.map(p => `
         <tr>
@@ -33,8 +70,16 @@ async function loadPatients() {
             </td>
             <td>${p.address_city}, ${p.address_state}</td>
             <td>
-                Conditions: ${p.conditions?.length || 0}<br>
-                Allergies: ${p.allergies?.length || 0}<br>
+                Conditions: ${
+                    Array.isArray(p.medical_history?.conditions)
+                    ? p.medical_history.conditions.length
+                    : 0
+                }<br>
+                Allergies: ${
+                    Array.isArray(p.medical_history?.allergies)
+                    ? p.medical_history.allergies.length
+                    : 0
+                }
             </td>
         </tr>
     `);
@@ -42,44 +87,17 @@ async function loadPatients() {
     document.getElementById("patients-body").innerHTML = rows.join("");
 }
 
-loadPatients();
-</script>
-{% endblock %}
+function clearFilters() {
+    document.getElementById("search").value = "";
+    // document.getElementById("condition").value = "";
+    // document.getElementById("allergy").value = "";
+    
+    document.getElementById("sort").value = "full_name";
+    document.getElementById("order").value = "asc";
 
-{% block scripts %}
-<script>
-async function fetchAndRender(url) {
-    const res = await fetch("/api/admin/patients");
-    const json = await res.json();
-    let rows = json.results || json;
-
-    const container = document.getElementById("table-container");
-    container.innerHTML = "";
-
-    if (!rows || rows.length === 0) {
-        container.innerHTML = "<p>No patients found.</p>";
-        return;
-    }
-
-    // Create table headers
-    const headers = Object.keys(rows[0]);
-    let html = "<table class='admin-table'><thead><tr>";
-
-    headers.forEach(h => html += `<th>${h}</th>`);
-    html += "</tr></thead><tbody>";
-
-    // Fill table rows
-    rows.forEach(row => {
-        html += "<tr>";
-        headers.forEach(h => html += `<td>${JSON.stringify(row[h])}</td>`);
-        html += "</tr>";
-    });
-
-    html += "</tbody></table>";
-    container.innerHTML = html;
+    loadPatients();
 }
 
-// Fetch patients on page load
-fetchAndRender('/api/admin/patients');
+loadPatients();
 </script>
 {% endblock %}

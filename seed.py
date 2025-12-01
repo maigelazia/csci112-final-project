@@ -29,6 +29,15 @@ BRANCHES = [
     "Pasig-Ortigas Dental Hub"
 ]
 
+MED_CONDITIONS = [
+    "Diabetes", "Hypertension", "Asthma", "Allergies", "Heart Disease",
+    "Thyroid Issues", "Arthritis", "Depression", "Anxiety"
+]
+
+ALLERGIES = [
+    "Penicillin", "Aspirin", "Latex", "Pollen", "Dust Mites",
+    "Food Allergies", "Insect Stings"
+]
 
 def generate_patient_id(n):
     return f"PID{str(n).zfill(10)}"
@@ -62,6 +71,12 @@ def seed_patients(count=150):
         email = f"{first.lower()}.{last.lower()}{i}@mail.com"
         contact_number = f"+639{random.randint(100000000, 999999999)}"
 
+        num_conditions = random.randint(0, 3)
+        patient_conditions = random.sample(MED_CONDITIONS, k=min(num_conditions, len(MED_CONDITIONS)))
+        
+        num_allergies = random.randint(0, 2)
+        patient_allergies = random.sample(ALLERGIES, k=min(num_allergies, len(ALLERGIES)))
+
         doc = {
             "patient_id": patient_id,
             "full_name": full_name,
@@ -74,8 +89,8 @@ def seed_patients(count=150):
             "insurance_provider": "PhilHealth",
             "insurance_policy_number": f"PH{random.randint(1000000000, 9999999999)}",
 
-            "conditions": [],
-            "allergies": [],
+            "conditions": patient_conditions,
+            "allergies": patient_allergies,
             "current_medications": [],
             "family_history": {},
 
@@ -182,6 +197,24 @@ def seed_appointments(count=500):
     print("[D1] Appointment seeding complete.")
 
 
+def wipe_data():
+    print("Starting Database Wipe")
+    
+    appt_col = appointments_collection()
+    patient_col = patients_collection()
+
+    deleted_appts = appt_col.delete_many({})
+    print(f"[D1] Successfully deleted {deleted_appts.deleted_count} appointments.")
+    
+    deleted_patients = patient_col.delete_many({})
+    print(f"[D2] Successfully deleted {deleted_patients.deleted_count} patients.")
+
+    print("--- Database Wipe Complete ---")
+
+
 if __name__ == "__main__":
+    # can remove this line if we dont want to wipe data
+    wipe_data()
+
     seed_patients()
     seed_appointments()

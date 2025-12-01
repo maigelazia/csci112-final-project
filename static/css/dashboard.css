@@ -109,12 +109,12 @@ html, body {
 /* DASHBOARD LAYOUT */
 .wrapper {
     display: flex;
-    height: calc(100vh - 10vh);
+    min-height: calc(100vh - 10vh);
 }
 
 /* SIDEBAR */
 .sidebar {
-    width: 240px;
+    width: 200px;
     background: #1e1e1e;
     color: white;
     padding: 20px;
@@ -175,4 +175,68 @@ html, body {
 
 .table tr:hover {
     background: #fafafa;
+}
+
+
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    /* help how to center vertically */
+    margin: auto;
+    background: white;
+    padding: 20px;
+    width: 350px;
+    border-radius: 10px;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-actions button {
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.modal-actions button:first-child { 
+    background: black;
+    color: white;
+}
+
+.modal-actions button:first-child:hover {
+    background: #333;
+}
+
+.edit-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.edit-btn:hover {
+    background: #0075d4;
 }

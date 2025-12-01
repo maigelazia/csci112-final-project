@@ -218,3 +218,17 @@ def api_admin_patients():
         "count": len(results),
         "results": results
     })
+
+
+# UPDATE APPOINTMENT STATUS 
+@admin_bp.route("/api/admin/appointments/<appointment_id>/status", methods=["PUT"])
+def update_status(appointment_id):
+    data = request.json
+    new_status = data.get("status")
+
+    appointments_collection().update_one(
+        {"appointment_id": appointment_id},
+        {"$set": {"appointment_details.status": new_status}}
+    )
+
+    return jsonify({"message": "Status updated"}), 200
