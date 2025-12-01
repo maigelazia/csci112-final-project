@@ -33,7 +33,7 @@
         <p class="welcome-text-">
             Where your dental health is treated with precision and care.
         </p>
-        <button class="book-btn">Book an Appointment</button>
+        <button type="button" class="book-btn" onclick="window.location = '{{ url_for('appointment_bp.book_page') }}'">Book an Appointment</button>
 
     </div>
     {% endblock %}
