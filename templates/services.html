@@ -1,0 +1,56 @@
+{% extends "index.html" %}
+
+{% block title %}Dental Services{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/services.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="services-container">
+
+    <h1 class="page-title">Our Dental Services</h1>
+    <p class="page-subtitle">Comprehensive care for a healthier, brighter smile.</p>
+
+    <div class="services-grid">
+
+        <div class="service-card">
+            <!-- will replace these emojis later on with proper icons/images? -->
+            <div class="service-icon">🦷</div>
+            <h3>General Dentistry</h3>
+            <p>Routine checkups, fillings, and essential dental treatments to maintain your oral health.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">✨</div>
+            <h3>Cleaning & Preventive Care</h3>
+            <p>Professional dental cleaning, fluoride application, and oral hygiene guidance to prevent issues early.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">😬</div>
+            <h3>Orthodontics</h3>
+            <p>Braces and aligners that help correct misaligned teeth and achieve a straighter smile.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">🛠️</div>
+            <h3>Tooth Extraction</h3>
+            <p>Safe and gentle removal of damaged, decayed, or problematic teeth when necessary.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">💉</div>
+            <h3>Root Canal Therapy</h3>
+            <p>Treatment to eliminate infection and save badly damaged or painful teeth.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">🌟</div>
+            <h3>Cosmetic Dentistry</h3>
+            <p>Teeth whitening, veneers, and aesthetic treatments to enhance the look of your smile.</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

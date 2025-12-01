@@ -13,9 +13,9 @@
         <h1>DentalX</h1>
 
         <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact Us</a>
+            <a href="{{ url_for('index')}}">Home</a>
+            <!-- <a href="#">About Us</a> # since admin side, probably do not need these
+            <a href="#">Contact Us</a> -->
             <a href="{{ url_for('admin_auth_bp.admin_login') }} "><b>Log In</b></a>
             <button>Book Now</button>
             <!-- <a href="#">Book Now</a> -->

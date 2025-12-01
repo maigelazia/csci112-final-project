@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}DentalX{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     {% block styles %} {% endblock %}
 </head>
@@ -17,7 +17,7 @@
 
         <div class="nav-links">
             <a href="{{ url_for('index')}}">Home</a>
-            <!-- <a href="#">About Us</a> -->
+            <a href="{{ url_for('services')}}">Services</a>
             <!-- <a href="#">Patient Info</a> -->
             <a href="{{ url_for('admin_auth_bp.admin_login') }} ">Log In</a>
             <button type="button" onclick="window.location = '{{ url_for('appointment_bp.book_page') }}'">Book Now</button>
@@ -30,7 +30,9 @@
     {% block content %}
     <div class="welcome-div">
         <h1 class="welcome-text">Your Smile,<br>Our Priority</h1>
-        <p class="welcome-text-">Lorem Ipsum Dolor Whatever Yada Yada Yes</p>
+        <p class="welcome-text-">
+            Where your dental health is treated with precision and care.
+        </p>
         <button class="book-btn">Book an Appointment</button>
 
     </div>
