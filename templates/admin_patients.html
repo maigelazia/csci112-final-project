@@ -1,20 +1,20 @@
 {% extends "admin_base.html" %}
-
-{% block title %}Patients{% endblock %}
+{% block title %}Admin | Patients{% endblock %}
 
 {% block content %}
-<h2>Patients</h2>
+
+<h2>Patient Records</h2>
 
 <div class="filters">
-    <input type="text" id="search" placeholder="Search patient name, email, ID">
 
-    <!-- quite confused where to get medical condition and allergy data for now -->
-    <!-- <input type="text" id="condition" placeholder="Filter by condition">
-    <input type="text" id="allergy" placeholder="Filter by allergy"> -->
+    <input type="text" id="search" placeholder="Search patients...">
+    <input type="text" id="condition" placeholder="Filter by condition">
+    <input type="text" id="allergy" placeholder="Filter by allergy">
 
     <select id="sort">
         <option value="full_name">Sort by Name</option>
         <option value="patient_id">Sort by ID</option>
+        <option value="created_at">Sort by Created</option>
     </select>
 
     <select id="order">
@@ -22,82 +22,173 @@
         <option value="desc">DESC</option>
     </select>
 
-    <button onclick="loadPatients()">Apply</button>
-    <button onclick="clearFilters()">Clear</button>
+    <button onclick="fetchPatients()">Apply</button>
+    <button onclick="clearFilters()" class="clear-btn">Clear</button>
 </div>
 
-<table class="table">
+<div class="table-wrapper">
+<table class="table" id="patients-table">
     <thead>
         <tr>
             <th>Patient ID</th>
-            <th>Name</th>
-            <th>Email & Contact</th>
-            <th>Location</th>
-            <th>Medical</th>
+            <th>Basic Info</th>
+            <th>Medical History</th>
+            <th>Appointment History</th>
         </tr>
     </thead>
     <tbody id="patients-body"></tbody>
 </table>
+</div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
 
-async function loadPatients() {
+function fetchPatients() {
     const params = new URLSearchParams({
         search: document.getElementById("search").value,
-        // condition: document.getElementById("condition").value,
-        // allergy: document.getElementById("allergy").value,
+        condition: document.getElementById("condition").value,
+        allergy: document.getElementById("allergy").value,
         sort: document.getElementById("sort").value,
-        order: document.getElementById("order").value,
-        page: 1,
-        page_size: 50
+        order: document.getElementById("order").value
     });
 
-    const resp = await fetch(`/api/admin/patients?${params.toString()}`);
-    const data = await resp.json();
-
-    console.log("Loaded patients:", data.results); // for debugging
-
-    const rows = data.results.map(p => `
-        <tr>
-            <td>${p.patient_id}</td>
-            <td>${p.full_name}</td>
-            <td>
-                ${p.email}<br>
-                <small>${p.contact_number}</small>
-            </td>
-            <td>${p.address_city}, ${p.address_state}</td>
-            <td>
-                Conditions: ${
-                    Array.isArray(p.medical_history?.conditions)
-                    ? p.medical_history.conditions.length
-                    : 0
-                }<br>
-                Allergies: ${
-                    Array.isArray(p.medical_history?.allergies)
-                    ? p.medical_history.allergies.length
-                    : 0
-                }
-            </td>
-        </tr>
-    `);
-
-    document.getElementById("patients-body").innerHTML = rows.join("");
+    fetch(`/api/admin/patients?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => loadPatients(data.results));
 }
 
 function clearFilters() {
     document.getElementById("search").value = "";
-    // document.getElementById("condition").value = "";
-    // document.getElementById("allergy").value = "";
-    
+    document.getElementById("condition").value = "";
+    document.getElementById("allergy").value = "";
     document.getElementById("sort").value = "full_name";
     document.getElementById("order").value = "asc";
-
-    loadPatients();
+    fetchPatients();
 }
 
-loadPatients();
+function loadPatients(list) {
+    const tbody = document.getElementById("patients-body");
+    tbody.innerHTML = "";
+
+    list.forEach(p => {
+
+        // Determine if medical sections should show
+        const validConditions = Array.isArray(p.conditions) && p.conditions.some(c => c && c.condition);
+        const validAllergies  = Array.isArray(p.allergies)  && p.allergies.some(a => a && a.substance);
+
+        const medId = `med-${p.patient_id}`;
+        const histId = `hist-${p.patient_id}`;
+
+        const row = `
+        <tr>
+            <td>${p.patient_id}</td>
+
+            <td>
+                <strong>${p.full_name}</strong><br>
+                ${p.email}<br>
+                ${p.contact_number}
+            </td>
+
+            <!-- MEDICAL HISTORY COLUMN -->
+            <td>
+                ${
+                    (validConditions || validAllergies)
+                    ? `
+                        <button class="details-btn" onclick="toggleDetails('${medId}')">
+                            View Medical History
+                        </button>
+
+                        <div class="details-container" id="${medId}">
+                            ${
+                                validConditions
+                                ? `
+                                    <strong>Conditions:</strong>
+                                    <ul>
+                                        ${
+                                            p.conditions
+                                                .filter(c => c && c.condition)
+                                                .map(c => `
+                                                    <li>
+                                                        <b>${c.condition}</b>
+                                                        ${c.medications ? ` — ${c.medications}` : ""}
+                                                        ${
+                                                            typeof c.controlled === "boolean"
+                                                            ? ` (${c.controlled ? "controlled" : "uncontrolled"})`
+                                                            : ""
+                                                        }
+                                                    </li>
+                                                `).join("")
+                                        }
+                                    </ul>
+                                `
+                                : ""
+                            }
+
+                            ${
+                                validAllergies
+                                ? `
+                                    <strong>Allergies:</strong>
+                                    <ul>
+                                        ${
+                                            p.allergies
+                                                .filter(a => a && a.substance)
+                                                .map(a => `
+                                                    <li>
+                                                        <b>${a.substance}</b>
+                                                        ${a.reaction ? ` — ${a.reaction}` : ""}
+                                                    </li>
+                                                `).join("")
+                                        }
+                                    </ul>
+                                `
+                                : ""
+                            }
+                        </div>
+                    `
+                    : "<i>No medical data</i>"
+                }
+            </td>
+
+            <!-- APPOINTMENT HISTORY COLUMN -->
+            <td>
+                ${
+                    Array.isArray(p.appointment_history) && p.appointment_history.length > 0
+                    ? `
+                        <button class="details-btn" onclick="toggleDetails('${histId}')">
+                            View History
+                        </button>
+
+                        <div class="details-container" id="${histId}">
+                            <ul>
+                                ${
+                                    p.appointment_history.map(h => `
+                                        <li>
+                                            <b>${h.date}</b> @ ${h.time} — ${h.concern}<br>
+                                            <b>Status:</b> ${h.status}<br>
+                                            <b>Branch:</b> ${h.branch || "N/A"}
+                                        </li>
+                                    `).join("")
+                                }
+                            </ul>
+                        </div>
+                    `
+                    : "<i>No appointments recorded</i>"
+                }
+            </td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+}
+
+function toggleDetails(id) {
+    const e = document.getElementById(id);
+    e.style.display = e.style.display === "block" ? "none" : "block";
+}
+
+fetchPatients();
 </script>
 {% endblock %}

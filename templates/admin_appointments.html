@@ -1,12 +1,13 @@
 {% extends "admin_base.html" %}
-
-{% block title %}Appointments{% endblock %}
+{% block title %}Admin | Appointments{% endblock %}
 
 {% block content %}
+
 <h2>Appointments</h2>
 
+<!-- FILTER BAR -->
 <div class="filters">
-    <input type="text" id="search" placeholder="Search name, email, concern...">
+    <input type="text" id="search" placeholder="Search appointments...">
     
     <select id="status">
         <option value="">All Status</option>
@@ -18,11 +19,11 @@
 
     <select id="branch">
         <option value="">All Branches</option>
-        <option value="Main">Makati Main Clinic</option>
-        <option value="West">Pasig-Ortigas Dental Hub</option>
-        <option value="South">Manila Downtown Clinic</option>
-        <option value="South">BGC Dental Center</option>
-        <option value="South">Quezon City Branch</option>
+        <option value="Makati Main Clinic">Makati Main Clinic</option>
+        <option value="Pasig-Ortigas Dental Hub">Pasig-Ortigas Dental Hub</option>
+        <option value="Manila Downtown Clinic">Manila Downtown Clinic</option>
+        <option value="BGC Dental Center">BGC Dental Center</option>
+        <option value="Quezon City Branch">Quezon City Branch</option>
     </select>
 
     <select id="sort">
@@ -36,25 +37,28 @@
         <option value="desc">DESC</option>
     </select>
 
-    <button onclick="loadAppointments()">Apply</button>
+    <button onclick="fetchAppointments()">Apply</button>
     <button onclick="clearFilters()" class="clear-btn">Clear</button>
 </div>
 
-<table class="table">
+
+<!-- TABLE -->
+<div class="table-wrapper">
+<table class="table" id="appointments-table">
     <thead>
         <tr>
             <th>Appointment ID</th>
             <th>Patient</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Concern</th>
-            <th>Branch</th>
-            <th>Status</th>
+            <th>Details</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody id="appointments-body"></tbody>
 </table>
+</div>
 
+
+<!-- STATUS MODAL -->
 <div id="statusModal" class="modal" style="display:none;">
     <div class="modal-content">
         <h3>Edit Appointment Status</h3>
@@ -74,92 +78,175 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 
 {% block scripts %}
 <script>
-async function loadAppointments() {
+
+// FETCH APPOINTMENTS WITH FILTERS
+function fetchAppointments() {
     const params = new URLSearchParams({
         search: document.getElementById("search").value,
         status: document.getElementById("status").value,
         branch: document.getElementById("branch").value,
         sort: document.getElementById("sort").value,
-        order: document.getElementById("order").value,
-        page: 1,
-        page_size: 50
+        order: document.getElementById("order").value
     });
 
-    const resp = await fetch(`/api/admin/appointments?${params.toString()}`);
-    const data = await resp.json();
-
-    const rows = data.results.map(a => `
-        <tr>
-            <td>${a.appointment_id}</td>
-            <td>
-                ${a.patient.full_name}<br>
-                <small>${a.patient.email}</small><br>
-                <small>${a.patient.contact_number}</small>
-            </td>
-            <td>${a.appointment_details.preferred_date}</td>
-            <td>${a.appointment_details.preferred_time}</td>
-            <td>${a.appointment_details.concern || "—"}</td>
-            <td>${a.appointment_details.clinic_branch}</td>
-            <td><strong>${a.appointment_details.status}</strong></td>
-
-            <td>
-                <button class="edit-btn" onclick="openStatusModal('${a.appointment_id}', '${a.appointment_details.status}')">
-                    Edit
-                </button>
-            </td>
-        </tr>
-    `);
-
-    document.getElementById("appointments-body").innerHTML = rows.join("");
+    fetch(`/api/admin/appointments?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => loadAppointments(data.results));
 }
 
+// CLEAR FILTERS
 function clearFilters() {
     document.getElementById("search").value = "";
     document.getElementById("status").value = "";
     document.getElementById("branch").value = "";
     document.getElementById("sort").value = "appointment_details.preferred_date";
     document.getElementById("order").value = "asc";
-
-    loadAppointments(); // refresh list with default filters
+    fetchAppointments();
 }
 
-loadAppointments();
 
+// RENDER TABLE
+function loadAppointments(list) {
+    const tbody = document.getElementById("appointments-body");
+    tbody.innerHTML = "";
+
+    list.forEach(a => {
+        const detId = `appt-${a.appointment_id}`;
+
+        const row = `
+        <tr>
+
+            <!-- APPOINTMENT ID -->
+            <td>${a.appointment_id}</td>
+
+            <!-- PATIENT INFORMATION -->
+            <td>
+                <strong>${a.patient.full_name || "N/A"}</strong><br>
+                ${a.patient.email}<br>
+                ${a.patient.contact_number}
+            </td>
+
+            <!-- DETAILS -->
+            <td>
+                <span class="badge">${a.appointment_details.status}</span><br>
+                <b>${a.appointment_details.preferred_date}</b> @ 
+                <b>${a.appointment_details.preferred_time}</b><br>
+
+                <button class="details-btn" onclick="toggleDetails('${detId}')">
+                    More Info
+                </button>
+
+                <div class="details-container" id="${detId}">
+                    <p><b>Concern:</b> ${a.appointment_details.concern || "N/A"}</p>
+                    <p><b>Branch:</b> ${a.appointment_details.clinic_branch || "N/A"}</p>
+
+                    <p><b>Arrived:</b> 
+                        ${a.appointment_details.check_in?.arrived ? "Yes" : "No"}
+                    </p>
+
+                    ${
+                        a.appointment_details.check_in?.arrival_time
+                        ? `<p><b>Arrival Time:</b> ${a.appointment_details.check_in.arrival_time}</p>`
+                        : ""
+                    }
+
+                    ${
+                        a.appointment_details.confirmed_at
+                        ? `<p><b>Confirmed At:</b> ${a.appointment_details.confirmed_at}</p>`
+                        : ""
+                    }
+
+                    ${
+                        a.appointment_details.cancelled_at
+                        ? `<p><b>Cancelled At:</b> ${a.appointment_details.cancelled_at}</p>`
+                        : ""
+                    }
+                </div>
+            </td>
+
+            <!-- ACTIONS -->
+            <td>
+
+                <!-- UNIFIED ACTION BUTTON -->
+                <button class="edit-btn"
+                    onclick="openStatusModal('${a.appointment_id}', '${a.appointment_details.status}')">
+                    Edit Status
+                </button>
+
+                <br>
+
+                <button class="edit-btn" onclick="sendReminder('${a.appointment_id}')">
+                    Send Reminder
+                </button>
+
+            </td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+}
+
+
+// COLLAPSIBLE DETAILS PANEL
+function toggleDetails(id) {
+    const e = document.getElementById(id);
+    e.style.display = e.style.display === "block" ? "none" : "block";
+}
+
+
+// MODAL CONTROLS
 let selectedAppointmentId = null;
 
-function openStatusModal(appointmentId, currentStatus) {
-    selectedAppointmentId = appointmentId;
-    document.getElementById("modal-appointment-id").innerText = appointmentId;
-    document.getElementById("new-status").value = currentStatus;
+function openStatusModal(id, status) {
+    selectedAppointmentId = id;
+    document.getElementById("modal-appointment-id").innerText = id;
+    document.getElementById("new-status").value = status;
 
     document.getElementById("statusModal").style.display = "block";
 }
 
 function closeStatusModal() {
-    document.getElementById("statusModal").style.display = "none";
     selectedAppointmentId = null;
+    document.getElementById("statusModal").style.display = "none";
 }
 
-async function updateStatus() {
+
+// STATUS UPDATE REQUEST
+function updateStatus() {
     const newStatus = document.getElementById("new-status").value;
 
-    const resp = await fetch(`/api/admin/appointments/${selectedAppointmentId}/status`, {
+    fetch(`/api/admin/appointments/${selectedAppointmentId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus })
+    })
+    .then(resp => {
+        if (resp.ok) {
+            closeStatusModal();
+            fetchAppointments();
+        } else {
+            alert("Failed to update status.");
+        }
     });
-
-    if (resp.ok) {
-        closeStatusModal();
-        loadAppointments(); // refresh table
-    } else {
-        alert("Failed to update status");
-    }
 }
+
+
+// SEND REMINDER EMAIL
+function sendReminder(id) {
+    fetch(`/api/admin/appointments/${id}/send-reminder`, { method: "POST" })
+        .then(() => alert("Reminder email sent!"));
+}
+
+
+// INITIAL LOAD
+fetchAppointments();
+
 </script>
 {% endblock %}
