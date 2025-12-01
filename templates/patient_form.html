@@ -12,111 +12,98 @@
 {% block content %}
 <div class = 'form-wrapper'>
     <h1> Patient Information Form</h1>
-    <form method = "POST" action="/submit_patient_form">
+    <form method="POST" action="/api/patient">
+        <input type="hidden" name="appointment_id" value="{{ appointment_id }}">
+
         <h3>Personal Information</h3>
-        <div class = form-group>
-            <label> First Name</label>
-            <input type="text" name = "first_name" required>
+        <div class="form-group">
+            <label> Full Name</label>
+            <input type="text" name="full_name" 
+                value="{{ patient_info.full_name if patient_info else '' }}" 
+                readonly required>
 
-            <label> Middle Name</label>
-            <input type="text" name = "middle_name" required>
-
-            <label> Last Name</label>
-            <input type="text" name = "last_name" required>
-
-            <label> Birthdate</label>
-            <input type="date" name = "birthdate" required>
-
-            <label>Sex</label>
-            <select name="sex">
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="Other">Other</option>
-            </select>
-
-        </div>
-        
-        <hr>
-
-        <h3>Contact Details</h3>
-        <div class = form-group>
             <label> Email</label>
-            <input type="email" name = "email" required>
+            <input type="email" name="email" 
+                value="{{ patient_info.email if patient_info else '' }}" 
+                readonly required>
 
             <label> Contact Number</label>
-            <input type="text" name = "number" required>
+            <input type="text" name="contact_number" 
+                value="{{ patient_info.contact_number if patient_info else '' }}" 
+                readonly required>
         </div>
-        
+
         <hr>
 
         <h3>Address</h3>
-        <div class = form-group>
+        <div class="form-group">
             <label> State</label>
-            <input type="text" name = "state" required>
+            <input type="text" name="address_state">
 
             <label> City</label>
-            <input type="text" name = "city" required>
+            <input type="text" name="address_city">
         </div>
 
         <hr>
 
-        <h3>Insurance Details </h3>
-
+        <h3>Insurance Details</h3>
         <div class="form-group">
+            <label>Provider</label>
+            <input type="text" name="insurance_provider">
 
-            <label>Health Insurance Provider</label>
-            <input type="text" name="provider" placeholder="e.g., Philhealth, Manulife"></textarea>
-            
             <label>Policy Number</label>
-            <input type="text" name="policy_number" placeholder="e.g., PH1234567890"></textarea>
-
+            <input type="text" name="insurance_policy_number">
         </div>
 
         <hr>
-          
-        
+
         <h3>Medical History</h3>
-        
         <div class="form-group">
-            <label>Existing Medical Conditions (comma-separated)</label>
-            <textarea name="medical_conditions" placeholder="e.g., Asthma, diabetes"></textarea>
+            <label>Existing Medical Conditions</label>
+            <textarea name="conditions"></textarea>
 
-            <label>Current Medications (comma-separated)</label>
-            <textarea name="current_medications" placeholder="e.g., Ceelin chewables, Doxycycline"></textarea>
+            <label>Current Medications</label>
+            <textarea name="current_medications"></textarea>
 
-            <label>Allergies(comma-separated)</label>
-            <input type="text" name="allergies" placeholder="e.g.,Allergic rhinits, nuts">
+            <label>Allergies</label>
+            <input type="text" name="allergies">
 
-            <label>Family History:</label>
-            <label class="checkbox" for="diabetes"> Diabetes <input type="checkbox" id="diabetes" name="diabetes" value="diabetes"></label>
-            <label class="checkbox" for="cancer">Cancer <input type="checkbox" id="cancer" name="cancer" value="cancer"></label>
-            <label class="checkbox" for="Hypertension">Hypertension <input type="checkbox" id="Hypertension" name="Hypertension" value="Hypertension"></label>
-            <label class="checkbox" for="heart_disease">Heart Disease  <input type="checkbox" id="heart_disease" name="heart_disease" value="heart_disease"></label>
+            <label>Family History</label>
+
+            <label class="checkbox">
+                <input type="checkbox" name="family_history" value="diabetes"> Diabetes
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="family_history" value="cancer"> Cancer
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="family_history" value="Hypertension"> Hypertension
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="family_history" value="heart_disease"> Heart Disease
+            </label>
         </div>
 
         <hr>
 
         <h3>Dental History</h3>
         <div class="form-group">
-            <label>Last Visit Date</label>
-            <input type="date" name="last_visit">
+            <label>Last Visit</label>
+            <input type="date" name="dental_last_visit">
 
-            <label>Reason/s for Visit</label>
-            <input type="text" name="reason_for_visit">
+            <label>Reason for Visit</label>
+            <input type="text" name="dental_reason">
 
-            <label>Previous Dental Work (comma-separated)</label>
-            <textarea name="previous_dental_work" placeholder="e.g., Braces, wisdom tooth removal, filling "></textarea>
+            <label>Previous Dental Work</label>
+            <textarea name="dental_previous_work"></textarea>
 
-            <label>Current Concern/s (comma-separated)</label>
-            <textarea name="current_concerns" placeholder="e.g., Tooth sensitivity, bleeding gums, etc."></textarea>
+            <label>Current Concerns</label>
+            <textarea name="dental_current_concerns"></textarea>
         </div>
 
         <hr>
 
-        <button type="submit" class="submit-btn" >Submit Form</button>
-
-       
-
+        <button type="submit" class="submit-btn">Submit Form</button>
     </form>
 </div>
 {% endblock %}
