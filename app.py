@@ -3,6 +3,12 @@ from flask_apscheduler import APScheduler
 from flask_mail import Mail
 import config
 
+# Register blueprints
+from routes.admin_auth import admin_auth_bp
+from routes.admin_routes import admin_bp
+from routes.appointment_routes import appointment_bp
+from routes.patient_routes import patient_bp
+
 mail = Mail()
 scheduler = APScheduler()
 
@@ -14,16 +20,10 @@ def create_app():
     scheduler.init_app(app)
     scheduler.start()
 
-    # Register blueprints
-    from routes.appointment_routes import appointment_bp
-    from routes.patient_routes import patient_bp
-    from routes.admin_routes import admin_bp
-    from routes.admin_auth import admin_auth_bp
-
-    app.register_blueprint(appointment_bp)
-    app.register_blueprint(patient_bp)
-    app.register_blueprint(admin_bp)
     app.register_blueprint(admin_auth_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(appointment_bp)
+    app.register_blueprint(patient_bp) 
 
     @app.route("/")
     def index():
